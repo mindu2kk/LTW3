@@ -1,24 +1,56 @@
 import React from "react";
-import {Typography} from "@mui/material";
+import {
+  Typography,
+  Box,
+  Divider,
+  CardContent,
+  Button,
+  Card,
+} from "@mui/material";
 
 import "./styles.css";
-import {useParams} from "react-router-dom";
-
+import { useParams, Link } from "react-router-dom";
+import models from "../../modelData/models";
 /**
  * Define UserDetail, a React component of Project 4.
  */
 function UserDetail() {
-    const user = useParams();
-    return (
-        <>
-          <Typography variant="body1">
-            This should be the UserDetail view of the PhotoShare app. Since it is
-            invoked from React Router the params from the route will be in property match.
-            So this should show details of user: {user.userId}.
-            You can fetch the model for the user from models.userModel.
+  const { userId } = useParams();
+  const user = models.userModel(userId);
+
+  return (
+    <Card variant="outlined">
+      <CardContent>
+        <Typography gutterBottom>
+          {user.first_name} {user.last_name}
+        </Typography>
+
+        <Divider />
+
+        <Box>
+          <Typography variant="subtitle1">
+            <strong>Location:</strong>
+            {user.location}
           </Typography>
-        </>
-    );
+          <Typography variant="subtitle1">
+            <strong>Occupation:</strong>
+            {user.occupation}
+          </Typography>
+        </Box>
+
+        <Typography variant="body1">"{user.description}"</Typography>
+
+        <Button
+          variant="contained"
+          color="secondary"
+          component={Link}
+          to={`/photos/${user._id}`}
+        >
+          Xem hinh anh
+        </Button>
+      </CardContent>
+    </Card>
+  );
 }
 
 export default UserDetail;

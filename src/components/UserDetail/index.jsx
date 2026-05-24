@@ -1,4 +1,4 @@
-import React from "react";
+import React,{useState,useEffect} from "react";
 import {
   Typography,
   Box,
@@ -11,12 +11,29 @@ import {
 import "./styles.css";
 import { useParams, Link } from "react-router-dom";
 import models from "../../modelData/models";
+import fetchModel from "../../lib/fetchModelData";
 /**
  * Define UserDetail, a React component of Project 4.
  */
 function UserDetail() {
   const { userId } = useParams();
-  const user = models.userModel(userId);
+  
+  const [user,setUser] = useState(null);
+
+  useEffect(() => {
+    fetchModel(`http://localhost:3000/user/${userId}`)
+    .then((response) => {
+      setUser(response.data)
+    });
+  },[userId])
+
+  if(!user){
+    return (
+      <Typography variant="h5" >
+        Dang tai ho so
+      </Typography>
+    );
+  }
 
   return (
     <Card variant="outlined">

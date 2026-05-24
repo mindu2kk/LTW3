@@ -1,4 +1,4 @@
-import React from "react";
+import React,{useState,useEffect} from "react";
 import {
   Divider,
   List,
@@ -8,13 +8,22 @@ import {
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import "./styles.css";
-import models from "../../modelData/models";
-
+import fetchModel from "../../lib/fetchModelData";
 /**
  * Define UserList, a React component of Project 4.
  */
 function UserList() {
-  const users = models.userListModel();
+  const [users,setUsers] = useState([]);
+
+  useEffect(() => {
+    fetchModel("http://localhost:3000/user/list")
+  .then((response) => {
+    setUsers(response.data);
+  })
+  .catch((error) => {
+    console.error("Loi khi tai danh sach UserList:",error);
+  });
+  },[]);
   return (
     <div>
       <Typography variant="h6" sx={{ fontWeight: "bold" }}>

@@ -1,5 +1,5 @@
-import React, { userState, useEffect, useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 function LoginRegister(props) {
   const [loginName, setLoginName] = useState("");
@@ -23,7 +23,7 @@ function LoginRegister(props) {
       const user = await response.json();
 
       props.changeUser(user);
-      navigate(`/user/{userId}`);
+      navigate(`/user/${user._id}`);
     } catch (error) {
       setErrorMsg("Loi thiet ke den may chu");
     }

@@ -71,7 +71,7 @@ function TopBar({ currentUser, changeUser }) {
         </Typography>
 
         {currentUser && (
-          <Button onCLick={handleLogout} variant="outlined">
+          <Button onClick={handleLogout} variant="outlined">
             Logout
           </Button>
         )}

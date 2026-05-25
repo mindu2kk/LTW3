@@ -13,6 +13,7 @@ import TopBar from "./components/TopBar";
 import UserDetail from "./components/UserDetail";
 import UserList from "./components/UserList";
 import UserPhotos from "./components/UserPhotos";
+import LoginRegister from "./components/LoginRegister";
 
 const App = (props) => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -26,7 +27,7 @@ const App = (props) => {
       <div>
         <Grid container spacing={2}>
           <Grid item xs={12}>
-            <TopBar />
+            <TopBar currentUser={currentUser} changeUser={changeUser} />
           </Grid>
           <div className="main-topbar-buffer" />
           <Grid item sm={3}>
@@ -37,9 +38,28 @@ const App = (props) => {
           <Grid item sm={9}>
             <Paper className="main-grid-item">
               <Routes>
-                <Route path="/users/:userId" element={<UserDetail />} />
-                <Route path="/photos/:userId" element={<UserPhotos />} />
-                <Route path="/users" element={<UserList />} />
+                {currentUser ? (
+                  <>
+                    <Route path="/users/:userId" element={<UserDetail />} />
+                    <Route path="/photos/:userId" element={<UserPhotos />} />
+                    <Route path="/users" element={<UserList />} />
+                    <Route
+                      path="*"
+                      element={<Navigate to={`/users/${currentUser._id}`} />}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <Route
+                      path="/login-register"
+                      element={<LoginRegister changeUser={changeUser} />}
+                    />
+                    <Route
+                      path="*"
+                      element={<Navigate to="/login-register" />}
+                    />
+                  </>
+                )}
               </Routes>
             </Paper>
           </Grid>

@@ -1,4 +1,4 @@
-import React,{useState,useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import {
   Typography,
   Box,
@@ -17,22 +17,19 @@ import fetchModel from "../../lib/fetchModelData";
  */
 function UserDetail() {
   const { userId } = useParams();
-  
-  const [user,setUser] = useState(null);
+
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    fetchModel(`http://localhost:3000/user/${userId}`)
-    .then((response) => {
-      setUser(response.data)
-    });
-  },[userId])
-
-  if(!user){
-    return (
-      <Typography variant="h5" >
-        Dang tai ho so
-      </Typography>
+    fetchModel(`https://5my2f7-8081.csb.app/user/${userId}`).then(
+      (response) => {
+        setUser(response.data);
+      }
     );
+  }, [userId]);
+
+  if (!user) {
+    return <Typography variant="h5">Dang tai ho so</Typography>;
   }
 
   return (

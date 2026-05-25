@@ -9,7 +9,6 @@ import {
 } from "@mui/material";
 
 import fetchModel from "../../lib/fetchModelData";
-import models from "../../modelData/models";
 import "./styles.css";
 import { useParams, Link } from "react-router-dom";
 
@@ -18,19 +17,18 @@ import { useParams, Link } from "react-router-dom";
  */
 function UserPhotos() {
   const { userId } = useParams();
-  const photos = models.photoOfUserModel(userId);
 
-  const [photo, setPhotos] = useState(null);
+  const [photos, setPhotos] = useState(null);
 
   useEffect(() => {
-    fetchModel(`http://localhost:3000/photosOfUser/${userId}`)
+    fetchModel(`https://5my2f7-8081.csb.app/photosOfUser/${userId}`)
       .then((response) => {
         setPhotos(response.data);
       })
       .catch((error) => {
         console.error("Loi khi tai danh sach anh : ", error);
       });
-  }, []);
+  }, [userId]);
 
   if (!photos) {
     return <Typography variant="h5">Dang tai hinh anh</Typography>;

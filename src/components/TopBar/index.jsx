@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { AppBar, Toolbar, Typography } from "@mui/material";
-import { useLocation } from "react-router-dom";
+import { AppBar, Toolbar, Typography, Button } from "@mui/material";
+import { useLocation, useNavigate } from "react-router-dom";
 import "./styles.css";
 import models from "../../modelData/models";
 import fetchModel from "../../lib/fetchModelData";
@@ -10,25 +10,31 @@ import fetchModel from "../../lib/fetchModelData";
  *
  * Define TopBar, a React component of Project 4.
  */
-function TopBar() {
+function TopBar({ currentUser, changeUser }) {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const pathParts = location.pathname.split("/");
   const [contextText, setContextText] = useState("Welcome to Photo App");
 
   useEffect(() => {
+    if (!currentUser) {
+      setContextText("Please Login");
+      return;
+    }
+
     if (pathParts.length === 3) {
       const viewType = pathParts[1];
       const userId = pathParts[2];
 
-      fetchModel(`http://localhost:3000/user/${userId}`)
+      fetchModel(`https://5my2f7-8081.csb.app/user/${userId}`)
         .then((response) => {
           const user = response.data;
           const fullName = `${user.first_name} ${user.last_name}`;
 
           if (viewType === "users") {
             setContextText(fullName);
-          } else if ((viewType = "photos")) {
+          } else if (viewType === "photos") {
             setContextText(`Photo of ${fullName}`);
           }
         })
@@ -40,14 +46,35 @@ function TopBar() {
     } else {
       setContextText("Welcome to Photo App");
     }
-  }, [location.pathname]);
+  }, [location.pathname, currentUser]);
 
+  const handleLogout = async () => {
+    try {
+      await fetch("https://5my2f7-8081.csb.app/admin/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+      changeUser(null);
+      navigate("/login-LoginRegister");
+    } catch (error) {
+      console.error("Loi khi dang xuat", error);
+    }
+  };
   return (
     <AppBar className="topbar-appBar" position="absolute">
       <Toolbar>
+        <Typography variant="h5">
+          {currentUser ? `Hi ${currentUser.first_name}` : "Please login"}
+        </Typography>
         <Typography variant="h5" color="inherit">
           {contextText}
         </Typography>
+
+        {currentUser && (
+          <Button onCLick={handleLogout} variant="outlined">
+            Logout
+          </Button>
+        )}
       </Toolbar>
     </AppBar>
   );

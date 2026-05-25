@@ -10,8 +10,8 @@ import {
 
 import "./styles.css";
 import { useParams, Link } from "react-router-dom";
-import models from "../../modelData/models";
 import fetchModel from "../../lib/fetchModelData";
+import BASE_URL from "../../lib/config";
 /**
  * Define UserDetail, a React component of Project 4.
  */
@@ -21,7 +21,7 @@ function UserDetail() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    fetchModel(`https://5my2f7-8081.csb.app/user/${userId}`).then(
+    fetchModel(`${BASE_URL}/user/${userId}`).then(
       (response) => {
         setUser(response.data);
       }

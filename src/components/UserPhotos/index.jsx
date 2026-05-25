@@ -11,6 +11,7 @@ import {
 import fetchModel from "../../lib/fetchModelData";
 import "./styles.css";
 import { useParams, Link } from "react-router-dom";
+import BASE_URL from "../../lib/config";
 
 /**
  * Define UserPhotos, a React component of Project 4.
@@ -21,7 +22,7 @@ function UserPhotos() {
   const [photos, setPhotos] = useState(null);
 
   useEffect(() => {
-    fetchModel(`https://5my2f7-8081.csb.app/photosOfUser/${userId}`)
+    fetchModel(`${BASE_URL}/photosOfUser/${userId}`)
       .then((response) => {
         setPhotos(response.data);
       })

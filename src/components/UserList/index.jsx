@@ -9,6 +9,7 @@ import {
 import { Link } from "react-router-dom";
 import "./styles.css";
 import fetchModel from "../../lib/fetchModelData";
+import BASE_URL from "../../lib/config";
 /**
  * Define UserList, a React component of Project 4.
  */
@@ -16,7 +17,7 @@ function UserList() {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    fetchModel("https://5my2f7-8081.csb.app/user/list")
+    fetchModel(`${BASE_URL}/user/list`)
       .then((response) => {
         setUsers(response.data);
       })

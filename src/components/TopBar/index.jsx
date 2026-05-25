@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { AppBar, Toolbar, Typography, Button } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./styles.css";
-import models from "../../modelData/models";
 import fetchModel from "../../lib/fetchModelData";
+import BASE_URL from "../../lib/config";
 /**
  *
  *
@@ -27,7 +27,7 @@ function TopBar({ currentUser, changeUser }) {
       const viewType = pathParts[1];
       const userId = pathParts[2];
 
-      fetchModel(`https://5my2f7-8081.csb.app/user/${userId}`)
+      fetchModel(`${BASE_URL}/user/${userId}`)
         .then((response) => {
           const user = response.data;
           const fullName = `${user.first_name} ${user.last_name}`;
@@ -50,7 +50,7 @@ function TopBar({ currentUser, changeUser }) {
 
   const handleLogout = async () => {
     try {
-      await fetch("https://5my2f7-8081.csb.app/admin/logout", {
+      await fetch(`${BASE_URL}/admin/logout`, {
         method: "POST",
         credentials: "include",
       });

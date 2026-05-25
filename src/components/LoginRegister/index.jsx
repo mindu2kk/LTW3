@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import BASE_URL from "../../lib/config";
 
 function LoginRegister(props) {
   const [loginName, setLoginName] = useState("");
@@ -8,7 +9,7 @@ function LoginRegister(props) {
 
   const handleLogin = async () => {
     try {
-      const response = await fetch("https://5my2f7-8081.csb.app/admin/login", {
+      const response = await fetch(`${BASE_URL}/admin/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ login_name: loginName }),

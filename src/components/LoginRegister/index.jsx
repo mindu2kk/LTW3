@@ -22,8 +22,10 @@ function LoginRegister(props) {
 
       const user = await response.json();
 
+      localStorage.setItem("userId", user._id);
+
       props.changeUser(user);
-      navigate(`/user/${user._id}`);
+      navigate(`/users/${user._id}`);
     } catch (error) {
       setErrorMsg("Loi thiet ke den may chu");
     }

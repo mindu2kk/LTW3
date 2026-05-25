@@ -27,12 +27,12 @@ const App = (props) => {
       <div>
         <Grid container spacing={2}>
           <Grid item xs={12}>
-            <TopBar currentUser={currentUser} changeUser={changeUser} />
+            <TopBar currentUser={currentUser} changeUser={setCurrentUser} />
           </Grid>
           <div className="main-topbar-buffer" />
           <Grid item sm={3}>
             <Paper className="main-grid-item">
-              <UserList />
+              {currentUser && <UserList />}
             </Paper>
           </Grid>
           <Grid item sm={9}>

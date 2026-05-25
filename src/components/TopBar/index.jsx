@@ -54,8 +54,9 @@ function TopBar({ currentUser, changeUser }) {
         method: "POST",
         credentials: "include",
       });
+      localStorage.removeItem("userId");
       changeUser(null);
-      navigate("/login-LoginRegister");
+      navigate("/");
     } catch (error) {
       console.error("Loi khi dang xuat", error);
     }

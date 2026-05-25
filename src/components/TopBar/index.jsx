@@ -68,19 +68,35 @@ function TopBar({ currentUser, changeUser }) {
   };
   return (
     <AppBar className="topbar-appBar" position="absolute">
-      <Toolbar>
-        <Typography variant="h5">
-          {currentUser ? `Hi ${currentUser.first_name}` : "Please login"}
+      <Toolbar sx={{ display: "flex", alignItems: "center", gap: 3 }}>
+
+        {/* Lời chào / trạng thái đăng nhập — bên trái */}
+        <Typography variant="h6" sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>
+          {currentUser ? `Hi, ${currentUser.first_name}` : "Please Login"}
         </Typography>
-        <Typography variant="h5" color="inherit">
+
+        {/* Đường kẻ dọc ngăn cách */}
+        {currentUser && (
+          <Typography variant="h6" sx={{ opacity: 0.4 }}>|</Typography>
+        )}
+
+        {/* Context — tên user đang xem hoặc "Photo of..." — chiếm phần còn lại */}
+        <Typography variant="h6" sx={{ flexGrow: 1 }}>
           {contextText}
         </Typography>
 
+        {/* Nút Logout — bên phải, màu đỏ để nổi bật */}
         {currentUser && (
-          <Button onClick={handleLogout} variant="outlined">
+          <Button
+            onClick={handleLogout}
+            variant="contained"
+            color="error"
+            sx={{ whiteSpace: "nowrap" }}
+          >
             Logout
           </Button>
         )}
+
       </Toolbar>
     </AppBar>
   );

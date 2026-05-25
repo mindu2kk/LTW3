@@ -8,7 +8,7 @@ function fetchModel(url) {
   // Trả về một "Lời hứa" (Promise) vì việc lấy dữ liệu qua mạng tốn thời gian
   return new Promise(function (resolve, reject) {
     // Gọi API fetch có sẵn của trình duyệt để gửi HTTP GET Request
-    fetch(url)
+    fetch(url, { credentials: "include" })
       .then(function (response) {
         // Kiểm tra xem Server có phản hồi thành công (Mã 200 -> 299) không
         if (!response.ok) {

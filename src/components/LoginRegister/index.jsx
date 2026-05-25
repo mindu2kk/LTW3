@@ -13,7 +13,7 @@ function LoginRegister(props) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ login_name: loginName }),
-        credentials: "include",
+        // Không cần credentials: "include" nữa vì dùng JWT qua header
       });
       if (!response.ok) {
         const errorData = await response.json();
@@ -23,7 +23,8 @@ function LoginRegister(props) {
 
       const user = await response.json();
 
-      localStorage.setItem("userId", user._id);
+      // Lưu token vào localStorage — sẽ được gửi kèm mọi request qua Authorization header
+      localStorage.setItem("token", user.token);
 
       props.changeUser(user);
       navigate(`/users/${user._id}`);

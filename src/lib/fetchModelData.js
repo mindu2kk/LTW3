@@ -5,11 +5,14 @@
  * @returns {Promise}       A Promise that resolves with { data } hoặc reject nếu lỗi.
  */
 function fetchModel(url) {
-  // fetch() đã trả về Promise rồi, không cần bọc thêm new Promise bên ngoài
+  // Lấy token đã lưu khi login
+  const token = localStorage.getItem("token");
+
   return fetch(url, {
-    // credentials: "include" → browser tự gửi session cookie theo mỗi request
-    // Đây là cách duy nhất để server nhận ra user đang đăng nhập
-    credentials: "include",
+    headers: {
+      // Gửi token qua Authorization header — không bị chặn cross-site như cookie
+      ...(token && { Authorization: `Bearer ${token}` }),
+    },
   })
     .then(function (response) {
       if (!response.ok) {

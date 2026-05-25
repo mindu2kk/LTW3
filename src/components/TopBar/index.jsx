@@ -50,15 +50,20 @@ function TopBar({ currentUser, changeUser }) {
 
   const handleLogout = async () => {
     try {
+      const token = localStorage.getItem("token");
       await fetch(`${BASE_URL}/admin/logout`, {
         method: "POST",
-        credentials: "include",
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
       });
-      localStorage.removeItem("userId");
-      changeUser(null);
-      navigate("/");
     } catch (error) {
       console.error("Loi khi dang xuat", error);
+    } finally {
+      // Dù server có lỗi hay không, xóa token ở client là đủ để logout
+      localStorage.removeItem("token");
+      changeUser(null);
+      navigate("/");
     }
   };
   return (

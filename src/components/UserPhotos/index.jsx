@@ -119,9 +119,13 @@ function UserPhotos() {
                 {photo.comments.map((comment) => (
                   <Box key={comment._id} sx={{ mb: 1, pl: 1, borderLeft: "3px solid #eee" }}>
                     <Typography variant="subtitle2">
-                      <Link to={`/users/${comment.user._id}`}>
-                        {comment.user.first_name} {comment.user.last_name}
-                      </Link>
+                      {comment.user && comment.user._id ? (
+                        <Link to={`/users/${comment.user._id}`}>
+                          {comment.user.first_name} {comment.user.last_name}
+                        </Link>
+                      ) : (
+                        <span>Unknown User</span>
+                      )}
                       {" "}
                       <span style={{ color: "#999", fontSize: "0.8em" }}>
                         ({new Date(comment.date_time).toLocaleString()})

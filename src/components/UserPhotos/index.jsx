@@ -99,7 +99,20 @@ function UserPhotos() {
         <Card key={photo._id} sx={{ marginBottom: 3 }}>
           <CardMedia
             component="img"
-            image={require(`../../images/${photo.file_name}`)}
+            // Thử load từ backend URL trước (ảnh mới upload)
+            // Nếu không có thì fallback về require() cho ảnh cũ trong src/images/
+            image={
+              photo.file_name.startsWith("http")
+                ? photo.file_name
+                : (() => {
+                    try {
+                      return require(`../../images/${photo.file_name}`);
+                    } catch {
+                      // Ảnh upload mới — load từ backend
+                      return `${BASE_URL}/images/${photo.file_name}`;
+                    }
+                  })()
+            }
             alt="Upload by user"
             sx={{ maxHeight: 500, objectFit: "contain" }}
           />
@@ -119,13 +132,9 @@ function UserPhotos() {
                 {photo.comments.map((comment) => (
                   <Box key={comment._id} sx={{ mb: 1, pl: 1, borderLeft: "3px solid #eee" }}>
                     <Typography variant="subtitle2">
-                      {comment.user && comment.user._id ? (
-                        <Link to={`/users/${comment.user._id}`}>
-                          {comment.user.first_name} {comment.user.last_name}
-                        </Link>
-                      ) : (
-                        <span>Unknown User</span>
-                      )}
+                      <Link to={`/users/${comment.user._id}`}>
+                        {comment.user.first_name} {comment.user.last_name}
+                      </Link>
                       {" "}
                       <span style={{ color: "#999", fontSize: "0.8em" }}>
                         ({new Date(comment.date_time).toLocaleString()})

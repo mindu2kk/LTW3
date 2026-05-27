@@ -31,6 +31,13 @@ function UserList() {
         Danh sách người dùng
       </Typography>
       <List component="nav">
+        {/* Link xem tất cả ảnh */}
+        <Link to="/all-photos">
+          <ListItem sx={{ bgcolor: "#f5f5f5", borderRadius: 1, mb: 1 }}>
+            <ListItemText primary="📷 Tất cả ảnh" />
+          </ListItem>
+        </Link>
+        <Divider />
         {users.map((user) => (
           <React.Fragment key={user._id}>
             <Link to={`/users/${user._id}`}>

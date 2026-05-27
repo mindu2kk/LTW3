@@ -14,6 +14,7 @@ import UserDetail from "./components/UserDetail";
 import UserList from "./components/UserList";
 import UserPhotos from "./components/UserPhotos";
 import LoginRegister from "./components/LoginRegister";
+import AllPhotos from "./components/AllPhotos";
 
 const App = (props) => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -42,6 +43,7 @@ const App = (props) => {
                   <>
                     <Route path="/users/:userId" element={<UserDetail />} />
                     <Route path="/photos/:userId" element={<UserPhotos />} />
+                    <Route path="/all-photos" element={<AllPhotos />} />
                     <Route path="/users" element={<UserList />} />
                     <Route
                       path="*"

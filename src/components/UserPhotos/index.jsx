@@ -1,26 +1,40 @@
 import React, { useEffect, useState } from "react";
 import {
-  Typography,
-  Card,
-  CardMedia,
-  CardContent,
-  Divider,
-  Box,
-  TextField,
-  Button,
-  IconButton,
+  Typography, Card, CardMedia, CardContent,
+  Divider, Box, TextField, Button, IconButton,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
-
-import fetchModel from "../../lib/fetchModelData";
-import "./styles.css";
 import { useParams, Link } from "react-router-dom";
+import api from "../../lib/api";
 import BASE_URL from "../../lib/config";
+import "./styles.css";
+
+// Lấy userId từ JWT token đang lưu trong localStorage
+function getCurrentUserId() {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+  try {
+    return JSON.parse(atob(token.split(".")[1])).user_id;
+  } catch {
+    return null;
+  }
+}
+
+// Lấy URL ảnh — thử ảnh cũ trong src/images trước, nếu không có thì dùng URL backend
+function getImageUrl(fileName) {
+  try {
+    return require(`../../images/${fileName}`);
+  } catch {
+    return `${BASE_URL}/images/${fileName}`;
+  }
+}
 
 function UserPhotos() {
   const { userId } = useParams();
+  const currentUserId = getCurrentUserId();
+
   const [photos, setPhotos] = useState(null);
   const [commentInputs, setCommentInputs] = useState({});
   const [commentErrors, setCommentErrors] = useState({});
@@ -28,47 +42,21 @@ function UserPhotos() {
   const [editText, setEditText] = useState("");
   const [editError, setEditError] = useState("");
 
-  // Lấy userId của người đang đăng nhập từ token
-  const getCurrentUserId = () => {
-    const token = localStorage.getItem("token");
-    if (!token) return null;
-    try {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      return payload.user_id;
-    } catch {
-      return null;
-    }
-  };
-  const currentUserId = getCurrentUserId();
-
   useEffect(() => {
-    fetchModel(`${BASE_URL}/photosOfUser/${userId}`)
-      .then((response) => setPhotos(response.data))
-      .catch((error) => console.error("Loi khi tai danh sach anh:", error));
+    api(`/photosOfUser/${userId}`)
+      .then((data) => setPhotos(data))
+      .catch((err) => console.error("Loi khi tai anh:", err));
   }, [userId]);
 
+  // Thêm comment mới
   const handleAddComment = async (photoId) => {
-    const commentText = commentInputs[photoId] || "";
-    if (!commentText.trim()) {
+    const commentText = (commentInputs[photoId] || "").trim();
+    if (!commentText) {
       setCommentErrors((prev) => ({ ...prev, [photoId]: "Comment khong duoc de trong" }));
       return;
     }
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${BASE_URL}/commentsOfPhoto/${photoId}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token && { Authorization: `Bearer ${token}` }),
-        },
-        body: JSON.stringify({ comment: commentText.trim() }),
-      });
-      if (!response.ok) {
-        const err = await response.json();
-        setCommentErrors((prev) => ({ ...prev, [photoId]: err.message }));
-        return;
-      }
-      const newComment = await response.json();
+      const newComment = await api(`/commentsOfPhoto/${photoId}`, "POST", { comment: commentText });
       setPhotos((prev) =>
         prev.map((photo) =>
           photo._id === photoId
@@ -78,11 +66,12 @@ function UserPhotos() {
       );
       setCommentInputs((prev) => ({ ...prev, [photoId]: "" }));
       setCommentErrors((prev) => ({ ...prev, [photoId]: "" }));
-    } catch (error) {
-      setCommentErrors((prev) => ({ ...prev, [photoId]: "Loi ket noi server" }));
+    } catch (errMsg) {
+      setCommentErrors((prev) => ({ ...prev, [photoId]: errMsg }));
     }
   };
 
+  // Bắt đầu edit comment
   const handleStartEdit = (commentId, currentText) => {
     setEditingComment(commentId);
     setEditText(currentText);
@@ -95,41 +84,23 @@ function UserPhotos() {
     setEditError("");
   };
 
+  // Lưu comment đã sửa
   const handleSaveEdit = async (photoId, commentId) => {
-    if (!editText.trim()) {
-      setEditError("Comment khong duoc de trong");
-      return;
-    }
+    const text = editText.trim();
+    if (!text) { setEditError("Comment khong duoc de trong"); return; }
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${BASE_URL}/commentsOfPhoto/${photoId}/${commentId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token && { Authorization: `Bearer ${token}` }),
-        },
-        body: JSON.stringify({ comment: editText.trim() }),
-      });
-      if (!response.ok) {
-        const err = await response.json();
-        setEditError(err.message);
-        return;
-      }
+      await api(`/commentsOfPhoto/${photoId}/${commentId}`, "PUT", { comment: text });
       setPhotos((prev) =>
         prev.map((photo) =>
           photo._id === photoId
-            ? {
-                ...photo,
-                comments: photo.comments.map((c) =>
-                  c._id === commentId ? { ...c, comment: editText.trim() } : c
-                ),
-              }
+            ? { ...photo, comments: photo.comments.map((c) =>
+                c._id === commentId ? { ...c, comment: text } : c) }
             : photo
         )
       );
       handleCancelEdit();
-    } catch (error) {
-      setEditError("Loi ket noi server");
+    } catch (errMsg) {
+      setEditError(errMsg);
     }
   };
 
@@ -142,15 +113,8 @@ function UserPhotos() {
         <Card key={photo._id} sx={{ marginBottom: 3 }}>
           <CardMedia
             component="img"
-            image={
-              photo.file_name.startsWith("http")
-                ? photo.file_name
-                : (() => {
-                    try { return require(`../../images/${photo.file_name}`); }
-                    catch { return `${BASE_URL}/images/${photo.file_name}`; }
-                  })()
-            }
-            alt="Upload by user"
+            image={getImageUrl(photo.file_name)}
+            alt="photo"
             sx={{ maxHeight: 500, objectFit: "contain" }}
           />
           <CardContent>
@@ -165,11 +129,9 @@ function UserPhotos() {
                 {photo.comments.map((comment) => (
                   <Box key={comment._id} sx={{ mb: 1, pl: 1, borderLeft: "3px solid #eee" }}>
                     <Typography variant="subtitle2">
-                      {comment.user && comment.user._id ? (
-                        <Link to={`/users/${comment.user._id}`}>
-                          {comment.user.first_name} {comment.user.last_name}
-                        </Link>
-                      ) : "Unknown"}
+                      {comment.user?._id
+                        ? <Link to={`/users/${comment.user._id}`}>{comment.user.first_name} {comment.user.last_name}</Link>
+                        : "Unknown"}
                       {" "}
                       <span style={{ color: "#999", fontSize: "0.8em" }}>
                         ({new Date(comment.date_time).toLocaleString()})
@@ -178,13 +140,10 @@ function UserPhotos() {
 
                     {editingComment === comment._id ? (
                       <Box sx={{ mt: 0.5 }}>
-                        <TextField
-                          size="small" fullWidth autoFocus
+                        <TextField size="small" fullWidth autoFocus
                           value={editText}
                           onChange={(e) => { setEditText(e.target.value); setEditError(""); }}
-                          error={!!editError}
-                          helperText={editError}
-                        />
+                          error={!!editError} helperText={editError} />
                         <Box sx={{ display: "flex", gap: 1, mt: 0.5 }}>
                           <IconButton size="small" color="success"
                             onClick={() => handleSaveEdit(photo._id, comment._id)}>
@@ -197,10 +156,8 @@ function UserPhotos() {
                       </Box>
                     ) : (
                       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                        <Typography variant="body2" sx={{ flexGrow: 1 }}>
-                          {comment.comment}
-                        </Typography>
-                        {comment.user && comment.user._id === currentUserId && (
+                        <Typography variant="body2" sx={{ flexGrow: 1 }}>{comment.comment}</Typography>
+                        {comment.user?._id === currentUserId && (
                           <IconButton size="small"
                             onClick={() => handleStartEdit(comment._id, comment.comment)}>
                             <EditIcon fontSize="small" />
@@ -212,23 +169,17 @@ function UserPhotos() {
                 ))}
               </Box>
             ) : (
-              <Typography variant="body2" sx={{ mb: 2, color: "#999" }}>
-                Chua co comment nao
-              </Typography>
+              <Typography variant="body2" sx={{ mb: 2, color: "#999" }}>Chua co comment nao</Typography>
             )}
 
             <Box sx={{ display: "flex", gap: 1, alignItems: "flex-start" }}>
-              <TextField
-                size="small" fullWidth
+              <TextField size="small" fullWidth
                 placeholder="Nhap comment cua ban..."
                 value={commentInputs[photo._id] || ""}
-                onChange={(e) =>
-                  setCommentInputs((prev) => ({ ...prev, [photo._id]: e.target.value }))
-                }
+                onChange={(e) => setCommentInputs((prev) => ({ ...prev, [photo._id]: e.target.value }))}
                 onKeyDown={(e) => { if (e.key === "Enter") handleAddComment(photo._id); }}
                 error={!!commentErrors[photo._id]}
-                helperText={commentErrors[photo._id] || ""}
-              />
+                helperText={commentErrors[photo._id] || ""} />
               <Button variant="contained"
                 onClick={() => handleAddComment(photo._id)}
                 sx={{ whiteSpace: "nowrap" }}>

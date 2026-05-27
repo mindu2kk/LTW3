@@ -18,18 +18,15 @@ function UserList() {
   const [photoCounts, setPhotoCounts] = useState({});
 
   useEffect(() => {
-    // Gọi song song 2 API — nhanh hơn gọi tuần tự
-    Promise.all([
-      fetchModel(`${BASE_URL}/user/list`),
-      fetchModel(`${BASE_URL}/user/photo-counts`),
-    ])
-      .then(([usersRes, countsRes]) => {
-        setUsers(usersRes.data);
-        setPhotoCounts(countsRes.data);
-      })
-      .catch((error) => {
-        console.error("Loi khi tai UserList:", error);
-      });
+    // Gọi /user/list trước — đây là dữ liệu chính, phải hiển thị được
+    fetchModel(`${BASE_URL}/user/list`)
+      .then((res) => setUsers(res.data))
+      .catch((error) => console.error("Loi khi tai danh sach user:", error));
+
+    // Gọi photo-counts riêng — lỗi ở đây không ảnh hưởng đến danh sách user
+    fetchModel(`${BASE_URL}/user/photo-counts`)
+      .then((res) => setPhotoCounts(res.data))
+      .catch((error) => console.error("Loi khi tai so luong anh:", error));
   }, []);
   return (
     <div>

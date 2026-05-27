@@ -15,14 +15,20 @@ import BASE_URL from "../../lib/config";
  */
 function UserList() {
   const [users, setUsers] = useState([]);
+  const [photoCounts, setPhotoCounts] = useState({});
 
   useEffect(() => {
-    fetchModel(`${BASE_URL}/user/list`)
-      .then((response) => {
-        setUsers(response.data);
+    // Gọi song song 2 API — nhanh hơn gọi tuần tự
+    Promise.all([
+      fetchModel(`${BASE_URL}/user/list`),
+      fetchModel(`${BASE_URL}/user/photo-counts`),
+    ])
+      .then(([usersRes, countsRes]) => {
+        setUsers(usersRes.data);
+        setPhotoCounts(countsRes.data);
       })
       .catch((error) => {
-        console.error("Loi khi tai danh sach UserList:", error);
+        console.error("Loi khi tai UserList:", error);
       });
   }, []);
   return (
@@ -44,6 +50,8 @@ function UserList() {
               <ListItem>
                 <ListItemText
                   primary={`${user.first_name} ${user.last_name}`}
+                  // Hiện số ảnh bên dưới tên — 0 nếu user chưa có ảnh nào
+                  secondary={`${photoCounts[user._id] || 0} ảnh`}
                 />
               </ListItem>
             </Link>

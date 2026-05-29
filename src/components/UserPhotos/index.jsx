@@ -8,6 +8,7 @@ import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { useParams, Link } from "react-router-dom";
 import api from "../../lib/api";
 import BASE_URL from "../../lib/config";
@@ -84,6 +85,21 @@ function UserPhotos() {
     setEditingComment(null);
     setEditText("");
     setEditError("");
+  };
+
+  const handleDeleteComment = async (photoId, commentId) => {
+    try {
+      await api(`/commentsOfPhoto/${photoId}/${commentId}`, "DELETE");
+      setPhotos((prev) =>
+        prev.map((photo) =>
+          photo._id === photoId
+            ? { ...photo, comments: photo.comments.filter((c) => c._id !== commentId) }
+            : photo
+        )
+      );
+    } catch (errMsg) {
+      console.error("Loi khi xoa comment:", errMsg);
+    }
   };
 
   // Lưu comment đã sửa
@@ -196,11 +212,18 @@ function UserPhotos() {
                     ) : (
                       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                         <Typography variant="body2" sx={{ flexGrow: 1 }}>{comment.comment}</Typography>
+                        {/* Chỉ hiện nút Edit và Delete với comment của chính mình */}
                         {comment.user?._id === currentUserId && (
-                          <IconButton size="small"
-                            onClick={() => handleStartEdit(comment._id, comment.comment)}>
-                            <EditIcon fontSize="small" />
-                          </IconButton>
+                          <>
+                            <IconButton size="small"
+                              onClick={() => handleStartEdit(comment._id, comment.comment)}>
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                            <IconButton size="small" color="error"
+                              onClick={() => handleDeleteComment(photo._id, comment._id)}>
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </>
                         )}
                       </Box>
                     )}

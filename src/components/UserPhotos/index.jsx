@@ -213,7 +213,7 @@ function UserPhotos() {
                       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                         <Typography variant="body2" sx={{ flexGrow: 1 }}>{comment.comment}</Typography>
                         {/* Chỉ hiện nút Edit và Delete với comment của chính mình */}
-                        {comment.user?._id === currentUserId && (
+                        {comment.user?._id?.toString() === currentUserId?.toString() && (
                           <>
                             <IconButton size="small"
                               onClick={() => handleStartEdit(comment._id, comment.comment)}>

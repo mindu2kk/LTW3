@@ -6,6 +6,8 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import { useParams, Link } from "react-router-dom";
 import api from "../../lib/api";
 import BASE_URL from "../../lib/config";
@@ -104,6 +106,26 @@ function UserPhotos() {
     }
   };
 
+  // Toggle like/unlike ảnh
+  const handleLike = async (photoId) => {
+    try {
+      const result = await api(`/photos/${photoId}/like`, "POST");
+      // Cập nhật state ngay — thay mảng likes của photo đó
+      setPhotos((prev) =>
+        prev.map((photo) => {
+          if (photo._id !== photoId) return photo;
+          // Nếu liked → thêm currentUserId vào mảng, ngược lại bỏ ra
+          const newLikes = result.liked
+            ? [...(photo.likes || []), currentUserId]
+            : (photo.likes || []).filter((id) => id !== currentUserId);
+          return { ...photo, likes: newLikes };
+        })
+      );
+    } catch (err) {
+      console.error("Loi khi like:", err);
+    }
+  };
+
   if (!photos) return <Typography variant="h5">Dang tai hinh anh</Typography>;
   if (photos.length === 0) return <Typography>Nguoi dung nay chua dang buc anh nao</Typography>;
 
@@ -121,6 +143,23 @@ function UserPhotos() {
             <Typography variant="caption" color="textSecondary">
               Date posted: {new Date(photo.date_time).toLocaleString()}
             </Typography>
+
+            {/* Nút like — tim đỏ nếu đã like, tim rỗng nếu chưa */}
+            <Box sx={{ display: "flex", alignItems: "center", mt: 0.5 }}>
+              <IconButton
+                size="small"
+                onClick={() => handleLike(photo._id)}
+                color={photo.likes?.some((id) => id === currentUserId || id?.toString() === currentUserId) ? "error" : "default"}
+              >
+                {photo.likes?.some((id) => id === currentUserId || id?.toString() === currentUserId)
+                  ? <FavoriteIcon />
+                  : <FavoriteBorderIcon />}
+              </IconButton>
+              <Typography variant="body2" color="textSecondary">
+                {photo.likes?.length || 0} like
+              </Typography>
+            </Box>
+
             <Divider sx={{ my: 1 }} />
             <Typography variant="h6">Comments:</Typography>
 

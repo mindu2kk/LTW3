@@ -1,7 +1,13 @@
 import "./App.css";
+
 import React, { useState } from "react";
-import { Grid, Paper } from "@mui/material";
-import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
+import { Grid, Typography, Paper } from "@mui/material";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Navigate,
+} from "react-router-dom";
 
 import TopBar from "./components/TopBar";
 import UserDetail from "./components/UserDetail";
@@ -11,8 +17,12 @@ import LoginRegister from "./components/LoginRegister";
 import AllPhotos from "./components/AllPhotos";
 import EditProfile from "./components/EditProfile";
 
-const App = () => {
+const App = (props) => {
   const [currentUser, setCurrentUser] = useState(null);
+
+  const changeUser = (user) => {
+    setCurrentUser(user);
+  };
 
   return (
     <Router>
@@ -32,17 +42,26 @@ const App = () => {
               <Routes>
                 {currentUser ? (
                   <>
-                    <Route path="/users/:userId"          element={<UserDetail />} />
-                    <Route path="/photos/:userId"         element={<UserPhotos />} />
-                    <Route path="/all-photos"             element={<AllPhotos />} />
-                    <Route path="/edit-profile/:userId"   element={<EditProfile />} />
-                    <Route path="/users"                  element={<UserList />} />
-                    <Route path="*" element={<Navigate to={`/users/${currentUser._id}`} />} />
+                    <Route path="/users/:userId" element={<UserDetail />} />
+                    <Route path="/photos/:userId" element={<UserPhotos />} />
+                    <Route path="/all-photos" element={<AllPhotos />} />
+                    <Route path="/edit-profile/:userId" element={<EditProfile />} />
+                    <Route path="/users" element={<UserList />} />
+                    <Route
+                      path="*"
+                      element={<Navigate to={`/users/${currentUser._id}`} />}
+                    />
                   </>
                 ) : (
                   <>
-                    <Route path="/login-register" element={<LoginRegister changeUser={setCurrentUser} />} />
-                    <Route path="*" element={<Navigate to="/login-register" />} />
+                    <Route
+                      path="/login-register"
+                      element={<LoginRegister changeUser={changeUser} />}
+                    />
+                    <Route
+                      path="*"
+                      element={<Navigate to="/login-register" />}
+                    />
                   </>
                 )}
               </Routes>

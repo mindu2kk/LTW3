@@ -11,27 +11,32 @@ function TopBar({ currentUser, changeUser }) {
   const pathParts = location.pathname.split("/");
   const [contextText, setContextText] = useState("Welcome to Photo App");
 
-  // Cập nhật context text theo route hiện tại
   useEffect(() => {
-    if (!currentUser) { setContextText("Please Login"); return; }
-
+    if (!currentUser) {
+      setContextText("Please Login");
+      return;
+    }
     if (pathParts.length === 3) {
-      const [, viewType, userId] = pathParts;
+      const viewType = pathParts[1];
+      const userId = pathParts[2];
       api(`/user/${userId}`)
         .then((user) => {
           const fullName = `${user.first_name} ${user.last_name}`;
           if (viewType === "users") setContextText(fullName);
           else if (viewType === "photos") setContextText(`Photo of ${fullName}`);
         })
-        .catch(() => setContextText(""));
+        .catch(() => setContextText("Loi cai du lieu"));
     } else {
       setContextText("Welcome to Photo App");
     }
   }, [location.pathname, currentUser]);
 
   const handleLogout = async () => {
-    try { await api("/admin/logout", "POST"); } catch { /* ignore */ }
-    finally {
+    try {
+      await api("/admin/logout", "POST");
+    } catch {
+      // Dù server lỗi vẫn logout ở client
+    } finally {
       localStorage.removeItem("token");
       changeUser(null);
       navigate("/");
@@ -44,6 +49,7 @@ function TopBar({ currentUser, changeUser }) {
     const formData = new FormData();
     formData.append("photo", file);
     try {
+      // isFile = true → không set Content-Type, để browser tự set multipart
       await api("/photos/new", "POST", formData, true);
       alert("Upload anh thanh cong!");
       navigate(`/photos/${currentUser._id}`);
@@ -70,16 +76,17 @@ function TopBar({ currentUser, changeUser }) {
           <>
             <input type="file" accept="image/*" ref={fileInputRef}
               style={{ display: "none" }} onChange={handleFileChange} />
-            <Button variant="contained" color="primary" sx={{ whiteSpace: "nowrap" }}
-              onClick={() => fileInputRef.current.click()}>
+            <Button variant="contained" color="primary"
+              onClick={() => fileInputRef.current.click()}
+              sx={{ whiteSpace: "nowrap" }}>
               Add Photo
             </Button>
           </>
         )}
 
         {currentUser && (
-          <Button variant="contained" color="error" sx={{ whiteSpace: "nowrap" }}
-            onClick={handleLogout}>
+          <Button onClick={handleLogout} variant="contained" color="error"
+            sx={{ whiteSpace: "nowrap" }}>
             Logout
           </Button>
         )}

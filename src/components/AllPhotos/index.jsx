@@ -5,15 +5,20 @@ import api from "../../lib/api";
 import BASE_URL from "../../lib/config";
 
 function getImageUrl(fileName) {
-  try { return require(`../../images/${fileName}`); }
-  catch { return `${BASE_URL}/images/${fileName}`; }
+  try {
+    return require(`../../images/${fileName}`);
+  } catch {
+    return `${BASE_URL}/images/${fileName}`;
+  }
 }
 
 function AllPhotos() {
   const [photos, setPhotos] = useState(null);
 
   useEffect(() => {
-    api("/photos/all").then(setPhotos).catch(console.error);
+    api("/photos/all")
+      .then((data) => setPhotos(data))
+      .catch((err) => console.error("Loi khi tai tat ca anh:", err));
   }, []);
 
   if (!photos) return <Typography variant="h6">Dang tai...</Typography>;
@@ -28,8 +33,10 @@ function AllPhotos() {
         {photos.map((photo) => (
           <Grid item xs={12} sm={6} md={4} key={photo._id}>
             <Card>
-              <CardMedia component="img" image={getImageUrl(photo.file_name)}
-                alt="photo" sx={{ height: 200, objectFit: "cover" }} />
+              <CardMedia component="img"
+                image={getImageUrl(photo.file_name)}
+                alt="photo"
+                sx={{ height: 200, objectFit: "cover" }} />
               <CardContent sx={{ py: 1 }}>
                 {photo.user?._id ? (
                   <Typography variant="subtitle2">

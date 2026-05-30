@@ -4,7 +4,6 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import "./styles.css";
 import api from "../../lib/api";
 
-// Lấy userId của người đang đăng nhập từ JWT token
 function getCurrentUserId() {
   const token = localStorage.getItem("token");
   if (!token) return null;
@@ -43,10 +42,12 @@ function UserDetail() {
           <Typography variant="subtitle1"><strong>Occupation:</strong> {user.occupation}</Typography>
         </Box>
         <Typography variant="body1" sx={{ mb: 2 }}>"{user.description}"</Typography>
+
         <Box sx={{ display: "flex", gap: 1 }}>
           <Button variant="contained" color="secondary" component={Link} to={`/photos/${user._id}`}>
             Xem hinh anh
           </Button>
+          {/* Chỉ hiện nút sửa khi đang xem profile của chính mình */}
           {isOwnProfile && (
             <Button variant="outlined" onClick={() => navigate(`/edit-profile/${userId}`)}>
               Sua ho so

@@ -14,7 +14,7 @@ import api from "../../lib/api";
 import BASE_URL from "../../lib/config";
 import "./styles.css";
 
-// Lấy userId từ JWT token trong localStorage
+// Lấy userId từ JWT token đang lưu trong localStorage
 function getCurrentUserId() {
   const token = localStorage.getItem("token");
   if (!token) return null;
@@ -25,10 +25,13 @@ function getCurrentUserId() {
   }
 }
 
-// Load ảnh: thử ảnh cũ trong src/images trước, nếu không có thì dùng URL backend
+// Lấy URL ảnh — thử ảnh cũ trong src/images trước, nếu không có thì dùng URL backend
 function getImageUrl(fileName) {
-  try { return require(`../../images/${fileName}`); }
-  catch { return `${BASE_URL}/images/${fileName}`; }
+  try {
+    return require(`../../images/${fileName}`);
+  } catch {
+    return `${BASE_URL}/images/${fileName}`;
+  }
 }
 
 function UserPhotos() {
@@ -84,6 +87,21 @@ function UserPhotos() {
     setEditError("");
   };
 
+  const handleDeleteComment = async (photoId, commentId) => {
+    try {
+      await api(`/commentsOfPhoto/${photoId}/${commentId}`, "DELETE");
+      setPhotos((prev) =>
+        prev.map((photo) =>
+          photo._id === photoId
+            ? { ...photo, comments: photo.comments.filter((c) => c._id !== commentId) }
+            : photo
+        )
+      );
+    } catch (errMsg) {
+      console.error("Loi khi xoa comment:", errMsg);
+    }
+  };
+
   // Lưu comment đã sửa
   const handleSaveEdit = async (photoId, commentId) => {
     const text = editText.trim();
@@ -104,32 +122,18 @@ function UserPhotos() {
     }
   };
 
-  // Xóa comment
-  const handleDeleteComment = async (photoId, commentId) => {
-    try {
-      await api(`/commentsOfPhoto/${photoId}/${commentId}`, "DELETE");
-      setPhotos((prev) =>
-        prev.map((photo) =>
-          photo._id === photoId
-            ? { ...photo, comments: photo.comments.filter((c) => c._id !== commentId) }
-            : photo
-        )
-      );
-    } catch (errMsg) {
-      console.error("Loi khi xoa comment:", errMsg);
-    }
-  };
-
-  // Toggle like/unlike
+  // Toggle like/unlike ảnh
   const handleLike = async (photoId) => {
     try {
       const result = await api(`/photos/${photoId}/like`, "POST");
+      // Cập nhật state ngay — thay mảng likes của photo đó
       setPhotos((prev) =>
         prev.map((photo) => {
           if (photo._id !== photoId) return photo;
+          // Nếu liked → thêm currentUserId vào mảng, ngược lại bỏ ra
           const newLikes = result.liked
             ? [...(photo.likes || []), currentUserId]
-            : (photo.likes || []).filter((id) => id?.toString() !== currentUserId?.toString());
+            : (photo.likes || []).filter((id) => id !== currentUserId);
           return { ...photo, likes: newLikes };
         })
       );
@@ -156,12 +160,16 @@ function UserPhotos() {
               Date posted: {new Date(photo.date_time).toLocaleString()}
             </Typography>
 
-            {/* Nút like */}
+            {/* Nút like — tim đỏ nếu đã like, tim rỗng nếu chưa */}
             <Box sx={{ display: "flex", alignItems: "center", mt: 0.5 }}>
-              <IconButton size="small" onClick={() => handleLike(photo._id)}
-                color={photo.likes?.some((id) => id?.toString() === currentUserId?.toString()) ? "error" : "default"}>
-                {photo.likes?.some((id) => id?.toString() === currentUserId?.toString())
-                  ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+              <IconButton
+                size="small"
+                onClick={() => handleLike(photo._id)}
+                color={photo.likes?.some((id) => id === currentUserId || id?.toString() === currentUserId) ? "error" : "default"}
+              >
+                {photo.likes?.some((id) => id === currentUserId || id?.toString() === currentUserId)
+                  ? <FavoriteIcon />
+                  : <FavoriteBorderIcon />}
               </IconButton>
               <Typography variant="body2" color="textSecondary">
                 {photo.likes?.length || 0} like
@@ -204,7 +212,7 @@ function UserPhotos() {
                     ) : (
                       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                         <Typography variant="body2" sx={{ flexGrow: 1 }}>{comment.comment}</Typography>
-                        {/* Chỉ hiện nút Edit/Delete với comment của chính mình */}
+                        {/* Chỉ hiện nút Edit và Delete với comment của chính mình */}
                         {comment.user?._id?.toString() === currentUserId?.toString() && (
                           <>
                             <IconButton size="small"
@@ -226,7 +234,6 @@ function UserPhotos() {
               <Typography variant="body2" sx={{ mb: 2, color: "#999" }}>Chua co comment nao</Typography>
             )}
 
-            {/* Ô nhập comment mới */}
             <Box sx={{ display: "flex", gap: 1, alignItems: "flex-start" }}>
               <TextField size="small" fullWidth
                 placeholder="Nhap comment cua ban..."
